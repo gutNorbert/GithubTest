@@ -1,0 +1,40 @@
+//
+//  Mockable.swift
+//  GithubTestTests
+//
+//  Created by Gutpinter Norbert on 2/2/23.
+//
+
+import XCTest
+@testable import GithubTest
+
+protocol Mockable: AnyObject {
+    var bundle: Bundle { get }
+    func loadJSON<T: Decodable>(filename: String, type: T.Type) -> T
+}
+
+extension Mockable {
+    var bundle: Bundle {
+        return Bundle(for: type(of: self))
+    }
+
+    func loadJSON<T: Decodable>(filename: String, type: T.Type) -> T {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        
+        guard let path = bundle.url(forResource: filename, withExtension: "json") else {
+            fatalError("Failed to load JSON")
+        }
+
+        do {
+            let data = try Data(contentsOf: path)
+            
+            
+            let decodedObject = try decoder.decode(type, from: data)
+
+            return decodedObject
+        } catch {
+            fatalError("Failed to decode loaded JSON")
+        }
+    }
+}
